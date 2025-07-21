@@ -1,13 +1,11 @@
-import { publicProcedure, router } from "./trpc";
-import { db } from "@/db/drizzle";
-import { todoTask } from "@/db/schema";
-import { desc, eq } from "drizzle-orm";
+import { router } from "./trpc";
 
-import { z } from "zod";
 import { todoRouter } from "./routes/todo";
+import { testRouter } from "./routes/test";
 
 export const appRouter = router({
   todo: todoRouter,
+  test: testRouter,
 });
 
 export type AppRouter = typeof appRouter;

@@ -8,7 +8,16 @@ export default function TodoList() {
     description: "",
     completed: false,
   });
-  const getTodos = trpc.todo.getTodos.useQuery();
+  const testRequest = trpc.test.hello.useQuery(undefined, {
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    refetchOnMount: false,
+  });
+  const getTodos = trpc.todo.getTodos.useQuery(undefined, {
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    refetchOnMount: false,
+  });
   const addTodo = trpc.todo.addTodo.useMutation({
     onSettled: () => {
       getTodos.refetch();
@@ -22,6 +31,11 @@ export default function TodoList() {
   return (
     <div className="">
       <div>
+        {testRequest.isLoading && <p>Loading...</p>}
+        {testRequest.error && (
+          <p className="text-red-500">Error: {testRequest.error.message}</p>
+        )}
+        {testRequest.data}
         <input
           placeholder="Title"
           value={input.title}
@@ -43,7 +57,6 @@ export default function TodoList() {
         >
           Create
         </button>
-        é
       </div>
       {/* {JSON.stringify(getTodos.data, null, 2)} */}
       <div className="w-full flex flex-col items-center gap-2">
