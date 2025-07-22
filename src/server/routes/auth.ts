@@ -5,7 +5,6 @@ import { user } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import jwt from "jsonwebtoken";
-import { emit } from "process";
 
 export const authRouter = router({
   register: publicProcedure
