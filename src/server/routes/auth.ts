@@ -5,6 +5,7 @@ import { user } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import jwt from "jsonwebtoken";
+import argon2 from "argon2";
 
 export const authRouter = router({
   register: publicProcedure
@@ -29,14 +30,16 @@ export const authRouter = router({
           });
         }
 
-        // In real production applications, you should hash the password before storing it
+        // Hash the password before storing it
+        const hashedPassword = await argon2.hash(password);
+
         const newUser = await db
           .insert(user)
           .values({
             firstname,
             lastname,
             email,
-            password,
+            password: hashedPassword,
           })
           .returning();
 
@@ -71,7 +74,10 @@ export const authRouter = router({
 
       // In real case scenarios, you should hash the password and compare it
       const userData = userRecord[0];
-      if (userData.password !== password) {
+
+      // Verify the password using argon2
+      const isPasswordValid = await argon2.verify(userData.password, password);
+      if (!isPasswordValid) {
         throw new TRPCError({
           code: "UNAUTHORIZED",
           message: "Invalid password",
