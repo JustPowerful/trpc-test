@@ -1,4 +1,3 @@
-import Image from "next/image";
 import TodoList from "./_components/todo-list";
 
 export default function Home() {
