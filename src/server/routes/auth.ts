@@ -104,4 +104,43 @@ export const authRouter = router({
         },
       };
     }),
+  verifyToken: publicProcedure
+    .input(z.object({ token: z.string() }))
+    .mutation(async ({ input }) => {
+      const { token } = input;
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
+          id: number;
+          email: string;
+        };
+
+        const userRecord = await db
+          .select({
+            id: user.id,
+            firstname: user.firstname,
+            lastname: user.lastname,
+            email: user.email,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt,
+          })
+          .from(user)
+          .where(eq(user.id, decoded.id));
+
+        if (userRecord.length === 0) {
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "Invalid token",
+          });
+        }
+
+        return {
+          user: userRecord[0],
+        };
+      } catch (error) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Invalid token",
+        });
+      }
+    }),
 });

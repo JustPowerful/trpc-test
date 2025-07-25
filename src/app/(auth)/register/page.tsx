@@ -1,11 +1,11 @@
 "use client";
 
-import { trpc } from "@/app/_trpc/client";
 import { useState } from "react";
 import Link from "next/link";
+import { useAuthStore } from "@/stores/useAuthStore";
 
 const Register = () => {
-  const register = trpc.auth.register.useMutation();
+  const { register, loading, error } = useAuthStore();
   const [userData, setUserData] = useState({
     firstname: "",
     lastname: "",
@@ -13,11 +13,18 @@ const Register = () => {
     password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await register.mutateAsync(userData);
+      await register(
+        userData.firstname,
+        userData.lastname,
+        userData.email,
+        userData.password
+      );
+      setIsSuccess(true);
       // You might want to redirect to login or auto-login here
     } catch (error) {
       console.error("Registration failed:", error);
@@ -174,13 +181,13 @@ const Register = () => {
               </p>
             </div>
 
-            {register.error && (
+            {error && (
               <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-md text-sm">
-                {register.error.message}
+                {error}
               </div>
             )}
 
-            {register.isSuccess && (
+            {isSuccess && (
               <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 px-4 py-3 rounded-md text-sm">
                 Account created successfully! You can now sign in.
               </div>
@@ -188,10 +195,10 @@ const Register = () => {
 
             <button
               type="submit"
-              disabled={register.isPending}
+              disabled={loading}
               className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {register.isPending ? (
+              {loading ? (
                 <div className="flex items-center">
                   <svg
                     className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"

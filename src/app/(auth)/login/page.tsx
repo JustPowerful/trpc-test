@@ -1,11 +1,11 @@
 "use client";
 
-import { trpc } from "@/app/_trpc/client";
 import { useState } from "react";
 import Link from "next/link";
+import { useAuthStore } from "@/stores/useAuthStore";
 
 const Login = () => {
-  const login = trpc.auth.login.useMutation();
+  const { login, loading, error } = useAuthStore();
   const [loginData, setLoginData] = useState({
     email: "",
     password: "",
@@ -14,17 +14,8 @@ const Login = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const result = await login.mutateAsync({
-        email: loginData.email,
-        password: loginData.password,
-      });
-
-      localStorage.setItem("token", result.token);
-      // You might want to redirect here
-    } catch (error) {
-      console.error("Login failed:", error);
-    }
+    await login(loginData.email, loginData.password);
+    // You might want to redirect here on success
   };
 
   return (
@@ -134,18 +125,18 @@ const Login = () => {
               </div>
             </div>
 
-            {login.error && (
+            {error && (
               <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-md text-sm">
-                {login.error.message}
+                {error}
               </div>
             )}
 
             <button
               type="submit"
-              disabled={login.isPending}
+              disabled={loading}
               className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {login.isPending ? (
+              {loading ? (
                 <div className="flex items-center">
                   <svg
                     className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
